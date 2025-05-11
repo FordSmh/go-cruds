@@ -1,0 +1,38 @@
+services:
+  mindlab-mongodb:
+    image: mongo:latest
+    restart: always
+    ports:
+      - "27017:27017"
+    container_name: 'mindlab-golang-mongodb'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    volumes:
+      - ./mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+    networks:
+      - "api.network"
+  mindlab-golang:
+    build:
+      context: ./
+      dockerfile: build/Dockerfile
+      target: app
+    command: "tail -f /dev/null"
+#    command: "go run  /var/www/mindlab/cmd/app/main.go"
+    ports:
+      - "8009:8009"
+    container_name: 'mindlab-golang'
+    volumes:
+      - ./:/var/www/mindlab
+    env_file:
+      - ./build/.env
+    links:
+      - mindlab-mongodb
+    networks:
+      - "api.network"
+
+networks:
+  api.network:
+
