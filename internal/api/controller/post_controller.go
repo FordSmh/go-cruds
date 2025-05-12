@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"github.com/sirupsen/logrus"
+	"mindlab/internal/api/validator"
 	"mindlab/internal/model"
 	"mindlab/internal/repo"
 	"net/http"
@@ -20,6 +22,13 @@ func (c *PostController) Create(ctx *gin.Context) {
 	var u model.Post
 	if err := ctx.ShouldBindJSON(&u); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := validator.Validate.Struct(u); err != nil {
+		errors := validator.PrepareErrorMessage(err)
+		logrus.Info(errors)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": errors})
 		return
 	}
 

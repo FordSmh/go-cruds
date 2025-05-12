@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"mindlab/internal/api/validator"
 	"mindlab/internal/model"
 	"mindlab/internal/repo"
 	"mindlab/internal/service"
@@ -10,8 +11,8 @@ import (
 )
 
 type Credentials struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" validate:"required,min=3,max=32"`
+	Password string `json:"password" validate:"required,min=8,max=24"`
 }
 
 type LoginController struct {
@@ -26,6 +27,12 @@ func (l *LoginController) Login(ctx *gin.Context) {
 	cred := Credentials{}
 	if err := ctx.ShouldBindJSON(&cred); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := validator.Validate.Struct(cred); err != nil {
+		errors := validator.PrepareErrorMessage(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": errors})
 		return
 	}
 
