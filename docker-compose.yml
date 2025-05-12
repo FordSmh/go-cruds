@@ -4,7 +4,7 @@ services:
     restart: always
     ports:
       - "27017:27017"
-    container_name: 'mindlab-golang-mongodb'
+    container_name: mindlab-golang-mongodb
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
@@ -13,26 +13,29 @@ services:
       - ./mongodb_data:/data/db
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
     networks:
-      - "api.network"
+      - api.network
+
   mindlab-golang:
     build:
-      context: ./
+      context: .
       dockerfile: build/Dockerfile
-      target: app
-    command: "tail -f /dev/null"
-#    command: "go run  /var/www/mindlab/cmd/app/main.go"
+      target: dev # dev
+#      target: runtime #prod
+    container_name: mindlab-golang
+    working_dir: /var/www/mindlab
+#    command: ["go", "run", "./cmd/app/main.go"] # dev rebuild
+    command: "tail -f /dev/null" # dev active
+#    command: ['/app/app'] #prod
     ports:
       - "8009:8009"
-    container_name: 'mindlab-golang'
     volumes:
-      - ./:/var/www/mindlab
+      - ./:/var/www/mindlab  # dev
     env_file:
       - ./build/.env
-    links:
+    depends_on:
       - mindlab-mongodb
     networks:
-      - "api.network"
+      - api.network
 
 networks:
   api.network:
-
