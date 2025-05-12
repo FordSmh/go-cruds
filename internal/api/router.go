@@ -19,13 +19,13 @@ func SetupRouter(h *Handler) *gin.Engine {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	r.Group("/api")
+	api := r.Group("/api")
 
 	{
-		r.POST("/login", h.Login.Login)
-		r.POST("/logout", m.AuthRequired(h.Login.TokenRepo), h.Login.Logout)
+		api.POST("/login", h.Login.Login)
+		api.POST("/logout", m.AuthRequired(h.Login.TokenRepo), h.Login.Logout)
 
-		postGroup := r.Group("/posts")
+		postGroup := api.Group("/posts")
 		{
 			postGroup.POST("", m.AuthRequired(h.Login.TokenRepo), m.RoleRequired([]string{"admin", "editor"}), h.Post.Create)
 			postGroup.GET("", h.Post.Index)
